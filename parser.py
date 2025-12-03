@@ -51,14 +51,6 @@ class WhileNode:
     def __init__(self, cond, body):
         self.cond = cond
         self.body = body
-class ImportNode:
-    def __init__(self, module, alias=None, symbol=None, from_module=False):
-        self.module = module
-        self.alias = alias
-        self.symbol = symbol
-        self.from_module = from_module
-    def __repr__(self):
-        return f"ImportNode(module={self.module}, alias={self.alias}, symbol={self.symbol},from={self.from_module})"
 class ForNode:
     def __init__(self, init, cond, step, body):
         self.init = init
@@ -112,25 +104,8 @@ def p_statement(p):
                  | if_statement
                  | while_statement
                  | for_statement
-                 | block
-                 | import_statement"""
+                 | block"""
     p[0] = p[1]
-
-def p_import_statement(p):
-    """
-    import_statementm: USE ID ';'
-    """
-    p[0] = ImportNode(module=p[2])
-def p_import_statement_alias(p):
-    """
-    import_statement : USE ID AS ID ';'
-    """
-    p[0] = ImportNode(module=p[2],alias=p[4])
-def p_import_statement_from(p):
-    """
-    import_statement : FROM ID USE ID ';'
-    """
-    p[0] = ImportNode(module=p[2],symbol=p[4], from_module=True)
 # ============================
 # BLOQUES
 # ============================
