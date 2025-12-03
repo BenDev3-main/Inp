@@ -17,8 +17,6 @@ reserved = {
 'true': 'TRUE',
 'false': 'FALSE',
 'display': 'DISPLAY',
-'use': 'USE', 'from': 'FROM',
-'as': 'AS',
 'Int': 'TYPE',
 'Float': 'TYPE',
 'String': 'TYPE',
