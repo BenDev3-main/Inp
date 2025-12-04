@@ -17,10 +17,16 @@ reserved = {
 'true': 'TRUE',
 'false': 'FALSE',
 'display': 'DISPLAY',
+'input': 'INPUT',
+'r_int': 'R_INT',
+'r_float': 'R_FLOAT',
+'r_rn': 'R_RN',
 'Int': 'TYPE',
 'Float': 'TYPE',
 'String': 'TYPE',
-'Bool': 'TYPE'
+'Bool': 'TYPE',
+'List': 'TYPE',
+'Dict': 'TYPE'
 }
 
 # ============================
