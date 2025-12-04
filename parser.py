@@ -74,6 +74,27 @@ class LiteralNode:
 
 class IdentifierNode:
     def __init__(self, name): self.name = name
+class ListNode:
+    def __init__(self, elements):
+        self.elements = elements
+
+
+class DictNode:
+    def __init__(self, pairs):
+        self.pairs = pairs
+
+
+class IndexAccessNode:
+    def __init__(self, collection, index):
+        self.collection = collection
+        self.index = index
+
+
+class IndexAssignNode:
+    def __init__(self, collection, index, expr):
+        self.collection = collection
+        self.index = index
+        self.expr = expr
 
 
 # ============================
@@ -237,6 +258,44 @@ def p_expression_binop(p):
                   | expression GE expression"""
     p[0] = BinOpNode(p[1], p[2], p[3])
 
+def p_expression_list(p):
+    "expression : LBRACKET list_elements RBRACKET"
+    p[0] = ListNode(p[2])
+
+def p_list_elements_multiple(p):
+    "list_elements : list_elements COMMA expression"
+    p[0] = p[1] + [p[3]]
+
+def p_list_elements_single(p):
+    "list_elements : expression"
+    p[0] = [p[1]]
+
+def p_list_elements_empty(p):
+    "list_elements : "
+    p[0] = []
+def p_expression_dict(p):
+    "expression : LBRACE dict_pairs RBRACE"
+    p[0] = DictNode(p[2])
+
+def p_dict_pairs_multiple(p):
+    "dict_pairs : dict_pairs COMMA dict_pair"
+    p[0] = p[1] + [p[3]]
+
+def p_dict_pairs_single(p):
+    "dict_pairs : dict_pair"
+    p[0] = [p[1]]
+
+def p_dict_pairs_empty(p):
+    "dict_pairs : "
+    p[0] = []
+
+def p_dict_pair(p):
+    "dict_pair : expression COLON expression"
+    p[0] = (p[1], p[2])
+    
+def p_expression_index_access(p):
+    "expression : expression LBRACKET expression RBRACKET"
+    p[0] = IndexAccessNode(p[1], p[3])
 
 def p_expression_unary(p):
     """expression : '-' expression
