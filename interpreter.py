@@ -45,7 +45,7 @@ class Interpreter:
         try:
             self.exec_block(program.statements, self.global_env)
         except ReturnSignal:
-            raise Exception("Error: return fuera de una función")
+            raise Exception("ERROR: 'return' espera estar dentro de una función.")
 
     # =========================
     # BLOQUES
@@ -62,7 +62,8 @@ class Interpreter:
         from parser import (
             VarDeclNode, AssignNode, DisplayNode,
             FunctionDefNode, IfNode, WhileNode,
-            ForNode, ReturnNode, BlockNode, FunctionCallNode
+            ForNode, ReturnNode, BlockNode, FunctionCallNode, ListNode,
+            DictNode, IndexAccessNode, IndexAssignNode
         )
 
         # Declaración de variable
@@ -134,8 +135,55 @@ class Interpreter:
         if isinstance(node, FunctionCallNode):
             self.call_function(node, env)
             return
+        if isinstance(node, ListNode):
+            return [self.visit(e) for e in node.elements]
+        if isinstance(node, DictNode):
+            result = {}
+            for key_node, value_node in node.pairs:
+                key = self.visit(key_node)
+                value = self.visit(value_node)
+                result[key] = value
+            return result
+        if isinstance(node, IndexAccessNode):
+            collection = self.visit(node.collection)
+            index = self.visit(node.index)
 
-        raise Exception(f"No sé ejecutar este nodo: {type(node)}")
+            if isinstance(collection, list):
+                if not isinstance(index, int):
+                    raise Exception("Error: índice de lista debe ser Int.")
+                try:
+                    return collection[index]
+                except:
+                    raise Exception("Error: índice fuera de rango.")
+
+            if isinstance(collection, dict):
+                if index not in collection:
+                    raise Exception(f"Error: clave '{index}' no existe.")
+                return collection[index]
+
+            raise Exception("No se puede indexar este tipo.")
+        if isinstance(node, IndexAssignNode):
+            collection = self.visit(node.collection)
+            index = self.visit(node.index)
+            value = self.visit(node.expr)
+
+            if isinstance(collection, list):
+                if not isinstance(index, int):
+                    raise Exception("Índice de lista debe ser Int.")
+                try:
+                    collection[index] = value
+                    return value
+                except:
+                    raise Exception("Índice fuera de rango.")
+
+            if isinstance(collection, dict):
+                collection[index] = value
+                return value
+
+            raise Exception("No se puede asignar índices en este tipo.")
+
+
+        raise Exception(f"I can't evalue this node: {type(node)}")
 
     # =========================
     # LLAMADAS A FUNCIONES
@@ -143,7 +191,7 @@ class Interpreter:
     def call_function(self, node, env):
 
         if node.name not in self.functions:
-            raise Exception(f"Función '{node.name}' no existe")
+            raise Exception(f"Function '{node.name}' doesn't exist.")
 
         fn = self.functions[node.name]
 
@@ -152,7 +200,7 @@ class Interpreter:
 
         # parámetros
         if len(fn.params) != len(node.args):
-            raise Exception(f"Función '{fn.name}' esperaba {len(fn.params)} argumentos")
+            raise Exception(f"Function '{fn.name}' expects {len(fn.params)} arguments.")
 
         for (ptype, pname), arg_expr in zip(fn.params, node.args):
             local.declare(pname, self.eval(arg_expr, env))
@@ -200,7 +248,7 @@ class Interpreter:
             if op == '<=': return left <= right
             if op == '>=': return left >= right
 
-            raise Exception(f"Operador desconocido: {op}")
+            raise Exception(f"Unknown operator: {op}")
 
         # unarios
         if isinstance(node, UnaryOpNode):
@@ -208,4 +256,4 @@ class Interpreter:
             if node.op == '-': return -val
             if node.op == '+': return +val
 
-        raise Exception(f"No sé evaluar: {type(node)}")
+        raise Exception(f"I cant't evalue: {type(node)}")
